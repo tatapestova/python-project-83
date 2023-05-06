@@ -1,3 +1,11 @@
+install:
+
+		poetry install
+
+test-coverage:
+	
+		poetry run pytest --cov=page_analyzer --cov-report xml
+
 dev:
 
 		poetry run flask --app page_analyzer:app run
