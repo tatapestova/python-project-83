@@ -123,6 +123,6 @@ def url_checks(id):
                 VALUES (%s, %s, %s, %s, %s, %s)", (
                 id, datetime.now(), status, h1, title, description))
     conn.commit()
-    flash('Страница успешно проверена', 'alert-success')
     conn.close()
+    flash('Страница успешно проверена', 'alert-success')
     return redirect(url_for('url_info', id=id))
