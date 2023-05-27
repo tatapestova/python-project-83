@@ -23,12 +23,8 @@ database: db-create tab-create
 
 db-create:
 
-		createdb page_analyzer
+		createdb railway
 
-ta-create:
+tab-create:
 
-		psql page_analyzer < database.sql
-
-connect:
-
-		psql page_analyzer
+		psql railway < database.sql
