@@ -4,6 +4,7 @@ from flask import Flask, request, flash, \
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
 import os
+import requests
 from dotenv import load_dotenv
 from datetime import datetime
 from validators.url import url
@@ -101,8 +102,17 @@ def url_info(id):
 def url_checks(id):
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor(cursor_factory=NamedTupleCursor)
-    cur.execute("INSERT INTO url_checks (url_id, created_at) \
-                    VALUES (%s, %s)", (id, datetime.now()))
+    cur.execute("SELECT name from urls WHERE id = %s", (id, ))
+    url = cur.fetchone()
+    try:
+        r = requests.get(url.name)
+    except requests.exceptions.RequestException:
+        conn.close()
+        flash('Произошла ошибка при проверке', 'alert-danger')
+        return redirect(url_for('url_info', id=id))
+    status = r.status_code
+    cur.execute("INSERT INTO url_checks (url_id, created_at, status_code) \
+                    VALUES (%s, %s, %s)", (id, datetime.now(), status))
     conn.commit()
     flash('Страница успешно проверена', 'alert-success')
     conn.close()
