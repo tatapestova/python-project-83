@@ -72,7 +72,7 @@ def all_urls():
                 ON urls.id = url_checks.url_id \
                 GROUP BY urls.id, urls.name, url_checks.status_code \
                 ORDER BY urls.id DESC;"
-            )
+                )
     urls = cur.fetchall()
     return render_template('all_urls.html', urls=urls)
 
@@ -84,13 +84,13 @@ def url_info(id):
         cur.execute("SELECT * FROM urls WHERE id = %s",
                     (id,))
         url = cur.fetchone()
-        cur.execute("SELECT * FROM  url_checks WHERE url_id = %s ORDER BY created_at DESC",
+        cur.execute("SELECT * FROM  url_checks WHERE url_id = %s \
+                    ORDER BY created_at DESC",
                     (id,))
         checks = cur.fetchall()
     if url is None:
         flash('Такой страницы не существует', 'alert-warning')
         return redirect(url_for('index'))
-        
     return render_template('show_details.html', id=id, name=url.name,
                            created_at=url.created_at,
                            checks=checks
