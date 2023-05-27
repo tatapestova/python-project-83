@@ -6,7 +6,6 @@ from psycopg2.extras import NamedTupleCursor
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-# import requests
 from validators.url import url
 from urllib.parse import urlparse
 
@@ -27,7 +26,7 @@ def index():
 
 
 @app.route('/urls', methods=['POST'])
-def urls_post() -> str:
+def urls_post():
     data_input = request.form.to_dict()
     url_input = data_input.get('url')
     if url(url_input) is not True:
@@ -63,24 +62,48 @@ def urls_post() -> str:
 
 
 @app.route('/urls', methods=['GET'])
-def all_urls() -> str:
+def all_urls():
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor(cursor_factory=NamedTupleCursor)
-    cur.execute("SELECT * FROM urls ORDER BY created_at DESC")
+    cur.execute("SELECT urls.id, urls.name, \
+                MAX(url_checks.created_at) AS check_time, \
+                url_checks.status_code FROM urls \
+                LEFT JOIN url_checks \
+                ON urls.id = url_checks.url_id \
+                GROUP BY urls.id, urls.name, url_checks.status_code \
+                ORDER BY urls.id DESC;"
+            )
     urls = cur.fetchall()
     return render_template('all_urls.html', urls=urls)
 
 
 @app.route('/urls/<int:id>', methods=['GET'])
-def url_info(id: int) -> str:
+def url_info(id):
     conn = psycopg2.connect(DATABASE_URL)
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE id = %s",
                     (id,))
         url = cur.fetchone()
+        cur.execute("SELECT * FROM  url_checks WHERE url_id = %s ORDER BY created_at DESC",
+                    (id,))
+        checks = cur.fetchall()
     if url is None:
         flash('Такой страницы не существует', 'alert-warning')
         return redirect(url_for('index'))
+        
     return render_template('show_details.html', id=id, name=url.name,
                            created_at=url.created_at,
+                           checks=checks
                            )
+
+
+@app.route('/urls/<id>/checks', methods=['POST'])
+def url_checks(id):
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor(cursor_factory=NamedTupleCursor)
+    cur.execute("INSERT INTO url_checks (url_id, created_at) \
+                    VALUES (%s, %s)", (id, datetime.now()))
+    conn.commit()
+    flash('Страница успешно проверена', 'alert-success')
+    conn.close()
+    return redirect(url_for('url_info', id=id))

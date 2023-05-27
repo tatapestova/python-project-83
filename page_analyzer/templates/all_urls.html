@@ -17,8 +17,13 @@
                 <tr>
                     <td>{{ url.id }}</td>
                     <td><a href="{{ url_for('url_info', id=url.id) }}">{{ url.name }}</a></td>
-                    <td></td>
-                    <td></td>
+                    {% if url.check_time %}
+                            <td>{{ url.check_time }}</td>
+                            <td>{{ url.status_code }}</td>
+                        {% else %}
+                            <td></td>
+                            <td></td>
+                        {% endif %}
                 </tr>
                 {% endfor %}
         </table>
