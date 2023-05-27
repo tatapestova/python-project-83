@@ -106,13 +106,14 @@ def url_checks(id):
     cur.execute("SELECT name from urls WHERE id = %s", (id, ))
     url = cur.fetchone()
     try:
-        r = requests.get(url.name)
+        response = requests.get(url.name)
+        response.raise_for_status()
     except requests.exceptions.RequestException:
         conn.close()
         flash('Произошла ошибка при проверке', 'alert-danger')
         return redirect(url_for('url_info', id=id))
-    status = r.status_code
-    soup = BeautifulSoup(r.text, 'html.parser')
+    status = response.status_code
+    soup = BeautifulSoup(response.text, 'html.parser')
     h1 = soup.h1.string if soup.h1.string else ''
     title = soup.title.string if soup.title.string else ''
     descr = soup.find('meta', {'name': 'description'})
