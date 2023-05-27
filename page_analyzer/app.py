@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 from validators.url import url
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 
 load_dotenv()
@@ -111,8 +112,15 @@ def url_checks(id):
         flash('Произошла ошибка при проверке', 'alert-danger')
         return redirect(url_for('url_info', id=id))
     status = r.status_code
-    cur.execute("INSERT INTO url_checks (url_id, created_at, status_code) \
-                    VALUES (%s, %s, %s)", (id, datetime.now(), status))
+    soup = BeautifulSoup(r.text, 'html.parser')
+    h1 = soup.h1.string if soup.h1.string else ''
+    title = soup.title.string if soup.title.string else ''
+    descr = soup.find('meta', {'name': 'description'})
+    description = descr['content'] if descr else ''
+    cur.execute("INSERT INTO url_checks ( \
+                url_id, created_at, status_code, h1, title, description) \
+                VALUES (%s, %s, %s, %s, %s, %s)", (
+                id, datetime.now(), status, h1, title, description))
     conn.commit()
     flash('Страница успешно проверена', 'alert-success')
     conn.close()
