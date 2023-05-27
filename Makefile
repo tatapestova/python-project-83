@@ -18,3 +18,17 @@ PORT ?= 8000
 start:
 
 		poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
+
+database: db-create tab-create
+
+db-create:
+
+		createdb page_analyzer
+
+ta-create:
+
+		psql page_analyzer < database.sql
+
+connect:
+
+		psql page_analyzer
