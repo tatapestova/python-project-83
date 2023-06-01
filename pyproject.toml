@@ -1,9 +1,16 @@
 [tool.poetry]
 name = "hexlet-code"
 version = "0.1.0"
-description = ""
+description = "Page Analyzer is a site that analyzes specified pages for SEO suitability."
 authors = ["Tata Pestova <tata.pestova@inbox.ru>"]
 readme = "README.md"
+repository = "https://github.com/tatapestova/python-project-83"
+classifiers = [
+    "Environment :: Web Environment",
+    "Framework :: Flask",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application"
+]
 packages = [{include = "page_analyzer"}]
 
 [tool.poetry.dependencies]
